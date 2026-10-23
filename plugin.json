@@ -1,23 +1,7 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "personal-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Personal MCP connectors for Stock App, Atlas Lab, SI Hub and RegWatch. Authentication is completed privately after import.",
-  "mcpServers": {
-    "stock-app": {
-      "type": "http",
-      "url": "https://new-version-stack-app.9n94fh64jr.workers.dev/mcp"
-    },
-    "atlas-lab": {
-      "type": "http",
-      "url": "https://atlas-lab.9n94fh64jr.workers.dev/mcp"
-    },
-    "si-hub": {
-      "type": "http",
-      "url": "https://si-hub-v2.9n94fh64jr.workers.dev/mcp"
-    },
-    "regwatch": {
-      "type": "http",
-      "url": "https://reg-watch.9n94fh64jr.workers.dev/mcp"
-    }
-  }
+  "repository": "https://github.com/v25qstn7g9-prog/personal-tools-plugin"
 }

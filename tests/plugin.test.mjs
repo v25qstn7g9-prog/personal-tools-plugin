@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 const root = new URL('../', import.meta.url);
 const plugin = JSON.parse(readFileSync(new URL('plugin.json', root), 'utf8'));
 const mcp = JSON.parse(readFileSync(new URL('mcp.json', root), 'utf8'));
+const legacy = JSON.parse(readFileSync(new URL('.mcp.json', root), 'utf8'));
 const expected = {
   'stock-app': 'new-version-stack-app.9n94fh64jr.workers.dev',
   'atlas-lab': 'atlas-lab.9n94fh64jr.workers.dev',
@@ -12,12 +13,23 @@ const expected = {
   regwatch: 'reg-watch.9n94fh64jr.workers.dev',
 };
 
-test('root manifest contains four concrete remote MCP definitions without credentials', () => {
+test('root manifest declares Agent Plugins 1.0 and does not mix inline legacy MCP fields', () => {
   assert.ok(plugin.name && plugin.description);
-  assert.deepEqual(Object.keys(plugin.mcpServers).sort(), Object.keys(expected).sort());
-  for (const [id, server] of Object.entries(plugin.mcpServers)) {
+  assert.equal(plugin.$schema, 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json');
+  assert.equal(plugin.version, '1.0.1');
+  assert.ok(!('mcpServers' in plugin));
+  const allowed = new Set(['$schema', 'name', 'version', 'description', 'author',
+    'homepage', 'repository', 'license', 'keywords', 'extensions']);
+  for (const key of Object.keys(plugin)) assert.ok(allowed.has(key));
+});
+
+test('canonical MCP configuration contains four concrete remote definitions without credentials', () => {
+  assert.equal(mcp.$schema, 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json');
+  assert.deepEqual(Object.keys(mcp).sort(), ['$schema', 'mcpServers']);
+  assert.deepEqual(Object.keys(mcp.mcpServers).sort(), Object.keys(expected).sort());
+  for (const [id, server] of Object.entries(mcp.mcpServers)) {
     assert.deepEqual(Object.keys(server).sort(), ['type', 'url']);
-    assert.equal(server.type, 'http');
+    assert.equal(server.type, 'streamable-http');
     const u = new URL(server.url);
     assert.equal(u.protocol, 'https:');
     assert.equal(u.hostname, expected[id]);
@@ -28,18 +40,19 @@ test('root manifest contains four concrete remote MCP definitions without creden
   }
 });
 
-test('standard MCP configuration mirrors the same four servers', () => {
-  assert.deepEqual(Object.keys(mcp.mcpServers).sort(), Object.keys(expected).sort());
-  for (const [id, server] of Object.entries(mcp.mcpServers)) {
-    assert.equal(server.type, 'streamable-http');
-    assert.equal(server.url, plugin.mcpServers[id].url);
+test('legacy hidden MCP configuration mirrors canonical servers without exposing credentials', () => {
+  assert.deepEqual(Object.keys(legacy), ['mcpServers']);
+  assert.deepEqual(Object.keys(legacy.mcpServers).sort(), Object.keys(expected).sort());
+  for (const [id, server] of Object.entries(legacy.mcpServers)) {
+    assert.equal(server.type, 'http');
+    assert.equal(server.url, mcp.mcpServers[id].url);
     assert.deepEqual(Object.keys(server).sort(), ['type', 'url']);
   }
 });
 
 test('publishable root contains only reviewed package files', () => {
-  const allowed = new Set(['.git', 'plugin.json', 'mcp.json', 'README.md', 'tests']);
+  const allowed = new Set(['.git', 'plugin.json', 'mcp.json', '.mcp.json', 'README.md', 'tests']);
   for (const file of readdirSync(root)) assert.ok(allowed.has(file), `Unexpected public file: ${file}`);
-  const configs = JSON.stringify({plugin, mcp});
+  const configs = JSON.stringify({plugin, mcp, legacy});
   assert.ok(!/Bearer\s+|x-api-key|headers|token|password|secret|\$\{/i.test(configs));
 });

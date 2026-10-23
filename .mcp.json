@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "stock-app": {
+      "type": "http",
+      "url": "https://new-version-stack-app.9n94fh64jr.workers.dev/mcp"
+    },
+    "atlas-lab": {
+      "type": "http",
+      "url": "https://atlas-lab.9n94fh64jr.workers.dev/mcp"
+    },
+    "si-hub": {
+      "type": "http",
+      "url": "https://si-hub-v2.9n94fh64jr.workers.dev/mcp"
+    },
+    "regwatch": {
+      "type": "http",
+      "url": "https://reg-watch.9n94fh64jr.workers.dev/mcp"
+    }
+  }
+}

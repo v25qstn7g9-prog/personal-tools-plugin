@@ -33,12 +33,25 @@ Perplexity 的 Credentials vault 中已儲存的金鑰，不會因此自動填�
 
 ## 格式與驗證
 
-`plugin.json` 在根目錄，含名稱、說明與 inline `mcpServers` 定義。
+`plugin.json` 在根目錄，明確宣告 Agent Plugins 1.0 的 `$schema`，只放標準允許的中繼資料欄位。
+四個服務定義放在根目錄 `mcp.json`，使用 `streamable-http`，不再把不同格式的 inline `mcpServers` 混進標準 manifest。
+另提供舊式客戶端用的隱藏 `.mcp.json`，使用 `http`；服務名稱與端點與標準設定一致。
 採用遠端 HTTP MCP 設定，不含固定 headers、URL 變數、環境變數或本機 stdio。
-根目錄 `mcp.json` 是 Agent Plugins 1.0 相容設定，同名服務與 URL 和 manifest 一致；不含額外服務。
+Perplexity 未公開精確匯入器 schema；相容檔是否被採用以及實際連接器顯示數量，仍須由匯入結果確認，不能只憑格式驗證宣稱成功。
 
 執行 `node --test tests/*.test.mjs` 可檢查端點、檔案白名單、兩份設定一致及常見密鑰洩漏形式。
 真正的 Perplexity 匯入結果仍需在帳號介面確認；官方文件沒有提供可公開呼叫的匯入驗證 API。
+
+## 1.0.1：修正匯入後內容空白的格式問題
+
+1.0.0 在使用者實際匯入後出現空白內容；既有靜態檢查未涵蓋真實匯入器。
+1.0.1 修正缺少標準 `$schema` 及混用 inline 欄位的問題，並補上 `.mcp.json` 相容檔。
+這是已確認格式缺陷的修正，不表示已經在使用者介面完成再驗證。
+
+若已安裝 1.0.0，不要只重整：GitHub 內容更新不等於已安裝副本更新。
+請在外掛頁右上角更多選單使用「Replace file／替換檔案」，上傳新版 ZIP。
+若介面只有 GitHub 匯入選項，可重新匯入並確認版本為 1.0.1；不要先刪除既有外掛或斷開已授權的連接器。
+若新版仍顯示空白，停止反覆試匯入，提供遮住敏感資訊的外掛詳情截圖，或改用官方逐一新增遠端 MCP 連接器。
 
 ## 官方文件
 
@@ -48,3 +61,7 @@ Perplexity 的 Credentials vault 中已儲存的金鑰，不會因此自動填�
   https://www.perplexity.ai/help-center/en/articles/13915507-adding-custom-remote-connectors
 - Agent Plugins MCP schema：
   https://agent-plugins.org/schemas/1.0.0/mcp.schema.json
+- Agent Plugins 標準 manifest 與設定分離規則：
+  https://github.com/agentplugins/agent-plugins-spec/blob/main/spec/1.0.0.md
+- Perplexity 自有專案的標準 manifest 範例：
+  https://github.com/perplexityai/modelcontextprotocol/blob/main/plugin.json
